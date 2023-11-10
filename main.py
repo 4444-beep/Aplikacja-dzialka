@@ -5,7 +5,7 @@ from imutils import perspective
 import shapely
 import numpy as np
 from shapely.geometry import Polygon
-
+import os
 import time
 start_time = time.time()
 def sort_coordinates(list_of_xy_coords):
@@ -40,14 +40,20 @@ def dji_min_2():
 cenX=[]
 cenY=[]
 width=0.05
-
+img_name="0"
 upper_orange= np.array([0, 215, 255], dtype = "uint8")
 
 lower_orange= np.array([0, 140, 255], dtype = "uint8")
 
-img_name=input("--- podaj ścieżkę zdjęcia ---\n")
 
-image = cv2.imread(img_name)
+
+
+while os.path.exists(img_name)==False or img_name=="0":
+    img_name=input("--- podaj ścieżkę zdjęcia ---\n")
+    if os.path.exists(img_name)==True:
+        image = cv2.imread(img_name)
+        
+
 
 mask = cv2.inRange(image, lower_orange, upper_orange)
 
@@ -157,8 +163,9 @@ cv2.FONT_HERSHEY_SIMPLEX, 0.55, colors[3], 2)
 
 
 
-print()
- 
+
+pow=str((pgon.area)/D*D)
+obw=str((pgon.length)/D)
 
 cv2.imshow("Image", image)
 #print(shapely.to_geojson(pgon))
@@ -166,8 +173,8 @@ f=open("dane.geojson","a")
 f.write(shapely.to_geojson(pgon))
 f.close()
 
-print("--- powierzchnia to :"+str(pgon.area)+" ---")
-print("---obwód to :"+str(pgon.length)+" ---")
+print("--- powierzchnia to :"+pow+" ---")
+print("---obwód to :"+obw+" ---")
 print("--- zapisano do pliku dane.geojson ---")
 print("--- czas działania %s sekund ---" % (time.time() - start_time))
 cv2.waitKey(0)
