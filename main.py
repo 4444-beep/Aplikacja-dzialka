@@ -45,7 +45,7 @@ upper_orange= np.array([0, 215, 255], dtype = "uint8")
 
 lower_orange= np.array([0, 140, 255], dtype = "uint8")
 
-img_name="laka2.jpg"
+img_name=input("--- podaj ścieżkę zdjęcia ---\n")
 
 image = cv2.imread(img_name)
 
@@ -124,7 +124,7 @@ x=zip(cenX,cenY)
 pgon = Polygon(x)
 
 
-print(pgon.area)
+
 cords=np.array(pgon.exterior.coords)
 cords=sort_coordinates(cords)
 
@@ -157,7 +157,7 @@ cv2.FONT_HERSHEY_SIMPLEX, 0.55, colors[3], 2)
 
 
 
-
+print()
  
 
 cv2.imshow("Image", image)
@@ -165,5 +165,9 @@ cv2.imshow("Image", image)
 f=open("dane.geojson","a")
 f.write(shapely.to_geojson(pgon))
 f.close()
-print("--- %s seconds ---" % (time.time() - start_time))
+
+print("--- powierzchnia to :"+str(pgon.area)+" ---")
+print("---obwód to :"+str(pgon.length)+" ---")
+print("--- zapisano do pliku dane.geojson ---")
+print("--- czas działania %s sekund ---" % (time.time() - start_time))
 cv2.waitKey(0)
