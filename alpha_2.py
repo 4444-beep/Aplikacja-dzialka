@@ -1,10 +1,11 @@
-import imutils
+
+import imutils 
 import cv2
 from scipy.spatial import distance as dist
 from imutils import perspective
-import shapely
+from shapely import to_geojson
 import numpy as np
-from shapely.geometry import Polygon
+from shapely import Polygon 
 import os
 import time
 start_time = time.time()
@@ -21,10 +22,9 @@ def sort_coordinates(list_of_xy_coords):
 def midpoint(ptA, ptB):
 	return ((ptA[0] + ptB[0]) * 0.5, (ptA[1] + ptB[1]) * 0.5)
 
-def dji_min_2():
+def dim_drone_alt(image):
     #angles=[41.5,90,48.5] for dji mini 2
-    #drone altitude later to be taken from user input, as well as drone model
-    b=100
+    b=input("podaj wysokość podczas robienia zdjęcia")
     #from tables
     sin_415=0.61256015297 
     cos_415=0.79042397419
@@ -32,7 +32,9 @@ def dji_min_2():
     c=b/cos_415
     a=sin_415*c
     a2=a*a
-    return a2
+    
+    A2=image.shape[1]
+    return a2, A2
 
 #option 1
 #width=dji_min_2()
@@ -41,6 +43,7 @@ cenX=[]
 cenY=[]
 width=0.05
 img_name="0"
+th=3
 upper_orange= np.array([0, 215, 255], dtype = "uint8")
 
 lower_orange= np.array([0, 140, 255], dtype = "uint8")
@@ -52,6 +55,7 @@ while os.path.exists(img_name)==False or img_name=="0":
     img_name=input("--- podaj ścieżkę zdjęcia ---\n")
     if os.path.exists(img_name)==True:
         image = cv2.imread(img_name)
+        img_copy=cv2.imread(img_name)
         
 
 
@@ -116,9 +120,11 @@ for c in cnts:
 		continue
 	# draw the contours on the image
 
-	cv2.drawContours(image, [box.astype("int")], -1, (0, 255, 0), 2)
-	cv2.drawContours(image, [refObj[0].astype("int")], -1, (0, 255, 0), 2)
+	cv2.drawContours(img_copy, [box.astype("int")], -1, (0, 255, 0), 2)
+	cv2.drawContours(img_copy, [refObj[0].astype("int")], -1, (0, 255, 0), 2)
 
+
+   
 	
 	cenX.append(int(cX))
 	cenY.append(int(cY))
@@ -142,10 +148,10 @@ for i in range(0,len(cords)-1,1):
     pnts2=cords[i+1]
     x2=int(pnts2[0])
     y2=int(pnts2[1])
-    cv2.line(image,(x1,y1),(x2,y2),colors[2],5)
+    cv2.line(img_copy,(x1,y1),(x2,y2),colors[2],th)
     D = dist.euclidean((x1,y1), (x2, y2)) / refObj[2]
     (mX, mY) = midpoint((x1,y1), (x2, y2))
-    cv2.putText(image, "{:.1f}m".format(D), (int(mX), int(mY)),
+    cv2.putText(img_copy, "{:.1f}m".format(D), (int(mX), int(mY)),
     cv2.FONT_HERSHEY_SIMPLEX, 0.55, colors[3], 2)
 
 pnts1=cords[len(cords)-1]
@@ -154,10 +160,12 @@ y1=int(pnts1[1])
 pnts2=cords[0]
 x2=int(pnts2[0])
 y2=int(pnts2[1])
-cv2.line(image,(x1,y1),(x2,y2),colors[2],5)
+cv2.line(img_copy,(x1,y1),(x2,y2),colors[2],th)
+
 D = dist.euclidean((x1,y1), (x2, y2)) / refObj[2]
+
 (mX, mY) = midpoint((x1,y1), (x2, y2))
-cv2.putText(image, "{:.1f}m".format(D), (int(mX), int(mY - 10)),
+cv2.putText(img_copy, "{:.1f}m".format(D), (int(mX), int(mY - 10)),
 cv2.FONT_HERSHEY_SIMPLEX, 0.55, colors[3], 2)
     
 
@@ -167,14 +175,14 @@ cv2.FONT_HERSHEY_SIMPLEX, 0.55, colors[3], 2)
 pow=str((pgon.area)/D*D)
 obw=str((pgon.length)/D)
 
-cv2.imshow("Image", image)
+cv2.imshow("Image", img_copy)
 #print(shapely.to_geojson(pgon))
 f=open("dane.geojson","a")
-f.write(shapely.to_geojson(pgon))
+f.write(to_geojson(pgon))
 f.close()
 
-print("--- powierzchnia to :"+pow+" ---")
-print("---obwód to :"+obw+" ---")
+print("--- powierzchnia to :"+pow+" m2 ---")
+print("--- obwód to :"+obw+" m ---")
 print("--- zapisano do pliku dane.geojson ---")
 print("--- czas działania %s sekund ---" % (time.time() - start_time))
 cv2.waitKey(0)
