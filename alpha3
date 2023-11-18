@@ -1,0 +1,29 @@
+import imutils 
+import cv2
+from scipy.spatial import distance as dist
+from imutils import perspective
+from shapely import to_geojson
+import numpy as np
+from shapely import Polygon 
+import os
+import time
+import math
+def midpoint(ptA, ptB):
+	return ((ptA[0] + ptB[0]) * 0.5, (ptA[1] + ptB[1]) * 0.5)
+def sort_coordinates(list_of_xy_coords):
+    cx, cy = list_of_xy_coords.mean(0)
+    x, y = list_of_xy_coords.T
+    angles = np.arctan2(x-cx, y-cy)
+    indices = np.argsort(-angles)
+    return list_of_xy_coords[indices]
+
+class dron:
+    def __init__(self, model, kat_kamery,wysokosc):
+        self.model = model
+        self.kat_kamery = kat_kamery
+        self.wysokosc=wysokosc
+    def skala(self.kat_kamery,img_width,wysokosc):
+        
+        sk=((self.wysokosc/math.cos(self.kat_kamery))*math.sin(self.kat_kamery))
+        
+        
